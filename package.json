@@ -1,0 +1,81 @@
+{
+  "name": "@poqpoq/unicorn",
+  "version": "0.1.0",
+  "description": "Universal guidance framework for the BlackBox Creative Suite and poqpoq World ecosystem",
+  "type": "module",
+  "main": "./dist/unicorn.cjs",
+  "module": "./dist/unicorn.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/unicorn.js",
+      "require": "./dist/unicorn.cjs"
+    },
+    "./styles": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
+    "validate": "npm run lint && npm run format:check && npm run test && npm run build",
+    "prepublishOnly": "npm run validate"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.13.0",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.4.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.17.0",
+    "vite": "^6.0.3",
+    "vite-plugin-dts": "^4.3.0",
+    "vitest": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8"
+  },
+  "keywords": [
+    "react",
+    "guidance",
+    "tooltips",
+    "walkthrough",
+    "onboarding",
+    "help",
+    "tutorial",
+    "poqpoq",
+    "blackbox"
+  ],
+  "author": "Allen Partridge <allen@poqpoq.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/increasinglyHuman/unicorn.git"
+  },
+  "homepage": "https://github.com/increasinglyHuman/unicorn#readme",
+  "bugs": {
+    "url": "https://github.com/increasinglyHuman/unicorn/issues"
+  }
+}
