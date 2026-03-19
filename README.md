@@ -283,7 +283,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 <img src="src/images/heroes/unicornHero001.png" width="400" alt="UnicornNotes" style="border-radius: 8px;">
 
-*The best teacher is the one you forget is there — until you need them.*
+*She's not the sage on the stage — she's the guide on the side.*
 
 **[p0qp0q.com](https://poqpoq.com)** — *pock pock*
 
