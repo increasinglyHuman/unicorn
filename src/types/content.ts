@@ -1,5 +1,13 @@
 /**
- * Core content types for UnicornNotes guidance system.
+ * Content schema — the complete type definitions for Unicorn guidance content.
+ * This file is the canonical reference for ContentPackage authors (human or AI).
+ * Changes here are public API changes and require a matching content schema version bump.
+ *
+ * Depends on: (nothing — pure type definitions)
+ * Depended on by:
+ *   - ContentResolver (parses and indexes these shapes)
+ *   - UnicornProvider (type constraints on props)
+ *   - Content authors (AI and human) writing ContentPackages for BlackBox apps
  */
 
 /** Skill level for progressive content filtering */

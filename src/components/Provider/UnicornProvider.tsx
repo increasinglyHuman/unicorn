@@ -6,6 +6,21 @@ import { defaultStrings } from '../../i18n';
 import { ContentResolver } from '../../content';
 import { loadProgression, saveProgression } from '../../utils/progression';
 
+/**
+ * UnicornProvider — root context provider wrapping a host app's Unicorn-aware subtree.
+ * Owns active guide state, step cursor, search visibility, user level, and progression persistence.
+ * All public hooks read from this provider; useUnicorn() throws clearly if used outside one.
+ *
+ * Depends on:
+ *   - ../../context (UnicornContext — the React context object)
+ *   - ../../content (ContentResolver — memoized per content array)
+ *   - ../../utils/progression (localStorage-backed state persistence)
+ *   - ../../i18n (defaultStrings + UnicornStrings for string overrides)
+ *   - ../../types (ContentPackage, UserLevel, GuideContent)
+ * Depended on by:
+ *   - Host applications (wrap app root or relevant subtree)
+ *   - Guide, Search, useUnicorn — consume the context this provides
+ */
 export interface UnicornProviderProps {
   /** Content packages to load */
   content: ContentPackage[];

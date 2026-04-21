@@ -1,5 +1,14 @@
 import type { UserLevel } from '../types';
 
+/**
+ * Progression persistence — localStorage-backed state for completed/dismissed guides and user level.
+ * Scoped per tool via `unicorn:<tool>` key so multiple BlackBox apps on the same origin don't collide.
+ * Silent-fails on quota errors, SSR, or private browsing — persistence is a nice-to-have, never a crash vector.
+ *
+ * Depends on: ../types (UserLevel), browser localStorage
+ * Depended on by: UnicornProvider (loads on mount, saves on progression state changes)
+ */
+
 const STORAGE_PREFIX = 'unicorn';
 
 export interface ProgressionState {

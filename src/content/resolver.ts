@@ -1,8 +1,15 @@
 import type { ContentPackage, GuideContent, UserLevel } from '../types';
 
 /**
- * Content resolver — finds the right guide for a given context.
- * Handles locale fallback, level filtering, and prerequisite checking.
+ * ContentResolver — resolves guides from loaded ContentPackages by context key, ID, or free-text search.
+ * Applies locale fallback (exact locale → 'en'), level filtering (show at-or-below user level),
+ * and pre-builds context/tag indexes at construction for O(1) lookup. Pure, stateless across queries.
+ *
+ * Depends on: ../types (ContentPackage, GuideContent, UserLevel)
+ * Depended on by:
+ *   - UnicornProvider (memoized per content array — primary consumer)
+ *   - Search (ad-hoc instance for full-text queries)
+ *   - External consumers (e.g. World TeleportScreen — uses getByContext standalone, no Provider required)
  */
 export class ContentResolver {
   private guides: Map<string, GuideContent> = new Map();

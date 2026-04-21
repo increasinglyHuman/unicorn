@@ -4,8 +4,16 @@ import { ContentResolver } from '../../content';
 import type { GuideContent } from '../../types';
 
 /**
- * Search component — command-palette style search across all loaded guides.
- * Opens with Cmd/Ctrl+? or programmatically via openSearch().
+ * Search — command-palette-style free-text search across all loaded guides.
+ * Opens via Cmd/Ctrl+? or programmatically through useUnicorn().openSearch().
+ * Results are filtered by user level; selecting a result opens it via openGuide().
+ * Returns null when closed — safe to mount unconditionally.
+ *
+ * Depends on:
+ *   - ../../hooks (useUnicorn — reads isSearchOpen, content, userLevel, strings + close/openGuide)
+ *   - ../../content (ContentResolver — ad-hoc instance for full-text search)
+ *   - ../../types (GuideContent)
+ * Depended on by: Host applications (rendered once inside UnicornProvider alongside Guide)
  */
 export function Search() {
   const { isSearchOpen, closeSearch, openGuide, content, userLevel, strings } =

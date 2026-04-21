@@ -1,6 +1,11 @@
 /**
- * UI chrome strings — externalized from day one for i18n readiness.
- * All user-facing text in Unicorn components goes through this table.
+ * i18n string table — externalizes every user-facing string Unicorn renders in its own chrome
+ * (buttons, placeholders, step counters). Host content strings (guide titles, step bodies)
+ * live in ContentPackages and use the guide's own locale field — they are out of scope here.
+ * Host apps override via <UnicornProvider strings={...}>; partial overrides merge onto defaults.
+ *
+ * Depends on: (nothing — zero runtime imports by design)
+ * Depended on by: UnicornProvider (merges overrides), Guide, Search (consume via useUnicorn().strings)
  */
 
 export interface UnicornStrings {

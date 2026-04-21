@@ -1,3 +1,12 @@
+/**
+ * Public entry point — the full surface exported to consumers of @poqpoq/unicorn.
+ * Anything not re-exported here is internal. This file must stay tree-shakeable:
+ * re-export named symbols only, never side-effecting modules.
+ *
+ * Depends on: all src/ subtrees (components, hooks, content, types, i18n, utils)
+ * Depended on by: Host applications (import root), Vite library bundler (entry)
+ */
+
 // Components
 export { UnicornProvider } from './components/Provider';
 export type { UnicornProviderProps } from './components/Provider';

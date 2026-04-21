@@ -2,9 +2,13 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useUnicorn } from '../../hooks';
 
 /**
- * Guide component — renders the active guide overlay.
- * Handles 1-step (tooltip-like) and N-step (walkthrough) guides uniformly.
- * Manages focus trapping, keyboard navigation, and accessibility.
+ * Guide — renders the active guide overlay when UnicornProvider has one set.
+ * Treats 1-step (tooltip-like) and N-step (walkthrough) guides uniformly through the same UI.
+ * Owns focus trap, keyboard nav (Tab/Arrow/Enter/Escape), and ARIA dialog semantics (WCAG AA).
+ * Returns null when no active guide — safe to mount unconditionally.
+ *
+ * Depends on: ../../hooks (useUnicorn — reads activeGuide, activeStep, strings + nav actions)
+ * Depended on by: Host applications (rendered once inside UnicornProvider alongside app content)
  */
 export function Guide() {
   const {
