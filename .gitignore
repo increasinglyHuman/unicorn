@@ -13,6 +13,9 @@ coverage/
 *.swp
 *.swo
 
+# Local agent/tool config (Claude Code permissions, etc.) — keep out of the public repo
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db
