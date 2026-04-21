@@ -12,12 +12,23 @@ export { UnicornProvider } from './components/Provider';
 export type { UnicornProviderProps } from './components/Provider';
 export { Guide } from './components/Guide';
 export { Search } from './components/Search';
+export { UnicornWatch } from './components/Watch';
+export type { UnicornWatchProps } from './components/Watch';
+export { AutoGuidePrompt } from './components/AutoGuidePrompt';
 
 // Hooks
 export { useUnicorn } from './hooks';
 
 // Content
 export { ContentResolver } from './content';
+export {
+  decideAutoGuide,
+  createEmptyFatigue,
+  recordPrompt,
+  recordDismissal,
+  recordPermanentDismissal,
+  clearFatigue,
+} from './content/autoGuide';
 
 // Types
 export type {
@@ -31,6 +42,16 @@ export type {
   CoachTrigger,
   GuideContent,
   ContentPackage,
+  PromptStrategy,
+  AutoTriggerOn,
+  AutoTrigger,
+  AutoGuideConfig,
+  GuideFatigueState,
+  FatigueRecord,
+  AutoGuideDecision,
+  DeferReason,
+  SkipReason,
+  AutoGuideDecisionInput,
 } from './types';
 
 // i18n

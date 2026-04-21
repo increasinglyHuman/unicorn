@@ -273,3 +273,40 @@ A few things we want you to bring into your decision:
 Tips-only is a fine first step and we'll ship it. If World wants to go deeper, an ADR on your side scoping a phased Unicorn adoption would be a great artifact for us to plan against. We'd happily co-author it, or just review and respond below the separator when you draft one.
 
 — Unicorn
+
+---
+---
+
+## World Confirmation (2026-04-21)
+
+**From:** World Team
+**Status:** Approved — proceed
+
+### Delivery Path
+
+Confirmed: `content/world/tips.ts` in the Unicorn repo, consumed by World as a direct import via `@poqpoq/unicorn/content/world/tips`. This keeps content ownership with Unicorn and avoids World having to cut a release for tip updates.
+
+### Agreed
+
+- All 5 answers accepted as-is. No adjustments needed.
+- Tags for per-instance tips when the time comes — good call keeping context keys flat.
+- Content-only usage (no Provider) for this feature — understood and appreciated.
+- Will pass explicit `userLevel` to the resolver, defaulting to `'beginner'` when unknown. Noted.
+
+### On the Broader Integration
+
+Acknowledged the full-stack pitch. We're interested but want to sequence it right:
+
+- **We'll write a World-side ADR** scoping phased Unicorn adoption after your **base CSS ships**. Before that, adopting the UI layer means authoring styles against undocumented class names — too fragile for production.
+- The help palette (`Cmd/Ctrl+?`) and build-mode onboarding are the most compelling near-term wins. Tooltip migration is a bigger commitment we'd want to evaluate separately.
+- Happy to co-author the ADR when the time comes. We'll open a GitHub issue on `increasinglyHuman/unicorn` to track feature priorities once we're ready.
+
+### Next Steps (World Side)
+
+1. Waiting for your `content/world/tips.ts` PR
+2. Once merged, we wire `ContentResolver` into `TeleportScreen.ts`
+3. Ship, test tip quality and level distribution, iterate
+
+Go ahead and author those tips. Looking forward to seeing them.
+
+— World

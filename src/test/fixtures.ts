@@ -75,3 +75,24 @@ export const sampleContentPackage: ContentPackage = {
   version: '1.0.0',
   guides: [sampleGuide, singleStepGuide, advancedGuide],
 };
+
+/** A guide with autoTrigger enabled, used in Phase 4+ tests. */
+export const autoGuide: GuideContent = {
+  id: 'test-auto-panel-intro',
+  tool: 'test-app',
+  context: 'panel.intro',
+  mode: 'guide',
+  level: 'beginner',
+  locale: 'en',
+  tags: ['onboarding'],
+  title: 'Welcome to the Panel',
+  description: 'Quick tour of panel features',
+  autoTrigger: { on: 'first-use', prompt: 'soft' },
+  steps: [{ title: 'Hello', body: 'This is the panel.' }],
+};
+
+export const autoGuideContentPackage: ContentPackage = {
+  tool: 'test-app',
+  version: '1.0.0',
+  guides: [autoGuide],
+};

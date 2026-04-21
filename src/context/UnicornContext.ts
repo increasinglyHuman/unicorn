@@ -40,6 +40,24 @@ export interface UnicornContextValue {
   annotate: (contextKey: string) => Record<string, unknown>;
   /** UI strings (i18n) */
   strings: UnicornStrings;
+
+  // --- Auto-guide (ADR-002) ---
+  /** Report that a host tool/panel just opened — dumb event in, smart decision out. */
+  onToolOpen: (contextKey: string) => void;
+  /** The guide currently showing a soft-prompt card, or null. */
+  pendingAutoPrompt: GuideContent | null;
+  /** User accepted the pending prompt — launches the guide. */
+  acceptPendingPrompt: () => void;
+  /** User declined the pending prompt with "Not now". */
+  dismissPendingPrompt: () => void;
+  /** User clicked "Don't ask again" — this guide won't auto-prompt again. */
+  permanentlyDismissPendingPrompt: () => void;
+  /** Whether auto-guides are enabled globally (user-controllable). */
+  autoGuideEnabled: boolean;
+  /** Toggle the global auto-guide switch (exposed for host settings UIs). */
+  setAutoGuideEnabled: (enabled: boolean) => void;
+  /** Reset all progression (completed, dismissed, fatigue) — "show me the tutorials again". */
+  resetProgression: () => void;
 }
 
 export const UnicornContext = createContext<UnicornContextValue | null>(null);

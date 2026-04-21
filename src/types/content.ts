@@ -66,6 +66,40 @@ export interface CoachTrigger {
   inactivitySeconds?: number;
 }
 
+/**
+ * How an auto-triggered guide is presented to the user.
+ *   - 'soft':   Slide-in card offering the guide with Yes / Not now / Don't ask again
+ *   - 'direct': Launches the guide immediately (still Escape-dismissable)
+ *   - 'badge':  Marks the annotated element with data-unicorn-auto-badge="true"
+ *               so the host app can render a visual indicator; user opts in explicitly.
+ *               If no element with the matching context is mounted, the guide is
+ *               silently deferred (still discoverable via search).
+ */
+export type PromptStrategy = 'soft' | 'direct' | 'badge';
+
+/**
+ * When an auto-triggered guide should fire.
+ *   - 'first-use': Only if the user has not yet completed this guide.
+ *                  (Currently the only supported mode — future modes may include
+ *                  'every-use' or 'on-error' once the engine grows.)
+ */
+export type AutoTriggerOn = 'first-use';
+
+/**
+ * Opt-in auto-guide configuration on a GuideContent entry.
+ * Presence of this field makes the guide eligible for proactive presentation
+ * when the host app calls onToolOpen(context) with a matching context key.
+ * Absence means the guide is user-initiated only (search, explicit openGuide).
+ */
+export interface AutoTrigger {
+  /** When the trigger fires. See {@link AutoTriggerOn}. */
+  on: AutoTriggerOn;
+  /** Presentation strategy. Defaults to the Provider's `autoGuide.defaultPrompt`. */
+  prompt?: PromptStrategy;
+  /** When multiple guides match one context, higher priority wins. Defaults to 0. */
+  priority?: number;
+}
+
 /** A complete guide content entry */
 export interface GuideContent {
   /** Unique identifier */
@@ -92,6 +126,8 @@ export interface GuideContent {
   steps: GuideStep[];
   /** Coach-specific trigger (only for mode: 'coach') */
   coachTrigger?: CoachTrigger;
+  /** Opt-in auto-guide trigger — see {@link AutoTrigger}. Absence = user-initiated only. */
+  autoTrigger?: AutoTrigger;
   /** External links at the guide level */
   externalLinks?: ExternalLink[];
   /** Hash of source files this content describes (staleness detection) */

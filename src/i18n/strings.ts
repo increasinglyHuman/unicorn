@@ -20,6 +20,14 @@ export interface UnicornStrings {
   gotIt: string;
   showMeHow: string;
   skipGuide: string;
+  /** Auto-prompt card title — given the guide's own title. */
+  autoPromptTitle: (guideTitle: string) => string;
+  /** Auto-prompt accept button ("Show me how" / "Yes" / etc). */
+  autoPromptAccept: string;
+  /** Auto-prompt decline-once button ("Not now"). */
+  autoPromptDismiss: string;
+  /** Auto-prompt permanent-dismiss button ("Don't ask again"). */
+  autoPromptPermanent: string;
 }
 
 export const defaultStrings: UnicornStrings = {
@@ -34,4 +42,8 @@ export const defaultStrings: UnicornStrings = {
   gotIt: 'Got it',
   showMeHow: 'Show me how',
   skipGuide: 'Skip',
+  autoPromptTitle: (guideTitle) => `Want a quick tour of ${guideTitle}?`,
+  autoPromptAccept: 'Show me',
+  autoPromptDismiss: 'Not now',
+  autoPromptPermanent: "Don't ask again",
 };

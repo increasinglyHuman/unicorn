@@ -1,10 +1,16 @@
 # ADR-002: Auto-Guide Trigger System
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-03-19
+**Accepted:** 2026-04-21
 **Authors:** Allen Partridge (p0qp0q)
 **Deciders:** Allen Partridge
 **Depends on:** ADR-001 (UnicornNotes Architecture)
+
+**Implementation:** Landed 2026-04-21 in v0.2. Pure decision engine at
+`src/content/autoGuide/decisionEngine.ts`, state helpers at `fatigue.ts`,
+Provider wiring via `useAutoGuide` hook, `UnicornWatch` and `AutoGuidePrompt`
+components. 51 new tests; 70 total, all passing.
 
 ---
 
