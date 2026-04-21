@@ -7,9 +7,7 @@ import { useUnicorn } from '../../hooks';
 
 function TriggerButton() {
   const { onToolOpen } = useUnicorn();
-  return (
-    <button onClick={() => onToolOpen('panel.intro')}>trigger</button>
-  );
+  return <button onClick={() => onToolOpen('panel.intro')}>trigger</button>;
 }
 
 describe('AutoGuidePrompt', () => {
@@ -121,7 +119,9 @@ describe('AutoGuidePrompt', () => {
     });
 
     expect(queryByRole('dialog')).toBeNull();
-    const stored = JSON.parse(localStorage.getItem('unicorn:test-tool') ?? '{}');
+    const stored = JSON.parse(
+      localStorage.getItem('unicorn:test-tool') ?? '{}',
+    );
     expect(stored.fatigue?.[autoGuide.id]?.permanentlyDismissed).toBeFalsy();
     expect(stored.fatigue?.[autoGuide.id]?.dismissCount).toBe(1);
   });
@@ -143,7 +143,9 @@ describe('AutoGuidePrompt', () => {
     });
 
     expect(queryByRole('dialog')).toBeNull();
-    const stored = JSON.parse(localStorage.getItem('unicorn:test-tool') ?? '{}');
+    const stored = JSON.parse(
+      localStorage.getItem('unicorn:test-tool') ?? '{}',
+    );
     expect(stored.fatigue?.[autoGuide.id]?.permanentlyDismissed).toBe(true);
   });
 });

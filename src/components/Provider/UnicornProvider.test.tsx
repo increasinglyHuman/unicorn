@@ -10,9 +10,7 @@ function TestConsumer() {
 
   return (
     <div>
-      <span data-testid="active-guide">
-        {activeGuide?.title ?? 'none'}
-      </span>
+      <span data-testid="active-guide">{activeGuide?.title ?? 'none'}</span>
       <span data-testid="active-step">{activeStep}</span>
       <button onClick={() => openGuide('test-terrain-sculpt')}>Open</button>
       <button onClick={closeGuide}>Close</button>

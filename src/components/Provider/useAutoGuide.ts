@@ -92,59 +92,62 @@ export function useAutoGuide(args: UseAutoGuideArgs): UseAutoGuideResult {
   const argsRef = useRef(args);
   argsRef.current = args;
 
-  const onToolOpen = useCallback((context: string) => {
-    const {
-      resolver,
-      config,
-      userLevel,
-      completedGuides,
-      fatigue,
-      autoGuideEnabled,
-      isAnotherGuideActive,
-      updateFatigue,
-      openGuide,
-    } = argsRef.current;
+  const onToolOpen = useCallback(
+    (context: string) => {
+      const {
+        resolver,
+        config,
+        userLevel,
+        completedGuides,
+        fatigue,
+        autoGuideEnabled,
+        isAnotherGuideActive,
+        updateFatigue,
+        openGuide,
+      } = argsRef.current;
 
-    const effectiveConfig: AutoGuideConfig = {
-      ...config,
-      enabled: config.enabled && autoGuideEnabled,
-    };
+      const effectiveConfig: AutoGuideConfig = {
+        ...config,
+        enabled: config.enabled && autoGuideEnabled,
+      };
 
-    const candidates = resolver.getByContext(context, { level: userLevel });
+      const candidates = resolver.getByContext(context, { level: userLevel });
 
-    const decision = decideAutoGuide({
-      context,
-      candidates,
-      completedGuides,
-      fatigue,
-      sessionDismissals,
-      lastAutoPromptAt,
-      isAnotherGuideActive,
-      now: Date.now(),
-      config: effectiveConfig,
-    });
+      const decision = decideAutoGuide({
+        context,
+        candidates,
+        completedGuides,
+        fatigue,
+        sessionDismissals,
+        lastAutoPromptAt,
+        isAnotherGuideActive,
+        now: Date.now(),
+        config: effectiveConfig,
+      });
 
-    if (decision.action !== 'show') return;
+      if (decision.action !== 'show') return;
 
-    updateFatigue(recordPrompt(fatigue, decision.guide.id));
-    setLastAutoPromptAt(Date.now());
+      updateFatigue(recordPrompt(fatigue, decision.guide.id));
+      setLastAutoPromptAt(Date.now());
 
-    switch (decision.strategy) {
-      case 'soft':
-        setPendingPrompt(decision.guide);
-        break;
-      case 'direct':
-        openGuide(decision.guide.id);
-        break;
-      case 'badge':
-        setBadgedContexts((prev) => {
-          const next = new Map(prev);
-          next.set(context, decision.guide);
-          return next;
-        });
-        break;
-    }
-  }, [sessionDismissals, lastAutoPromptAt]);
+      switch (decision.strategy) {
+        case 'soft':
+          setPendingPrompt(decision.guide);
+          break;
+        case 'direct':
+          openGuide(decision.guide.id);
+          break;
+        case 'badge':
+          setBadgedContexts((prev) => {
+            const next = new Map(prev);
+            next.set(context, decision.guide);
+            return next;
+          });
+          break;
+      }
+    },
+    [sessionDismissals, lastAutoPromptAt],
+  );
 
   const acceptPendingPrompt = useCallback(() => {
     if (!pendingPrompt) return;

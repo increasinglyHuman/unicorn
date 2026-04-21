@@ -266,9 +266,7 @@ describe('decideAutoGuide', () => {
         id: 'high',
         autoTrigger: { on: 'first-use', priority: 5 },
       });
-      const result = decideAutoGuide(
-        makeInput({ candidates: [low, high] }),
-      );
+      const result = decideAutoGuide(makeInput({ candidates: [low, high] }));
       expect(result.action).toBe('show');
       if (result.action === 'show') {
         expect(result.guide.id).toBe('high');

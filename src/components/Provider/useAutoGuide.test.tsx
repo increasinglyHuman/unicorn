@@ -42,7 +42,9 @@ describe('Provider + useAutoGuide integration', () => {
     expect(typeof result.current.onToolOpen).toBe('function');
     expect(typeof result.current.acceptPendingPrompt).toBe('function');
     expect(typeof result.current.dismissPendingPrompt).toBe('function');
-    expect(typeof result.current.permanentlyDismissPendingPrompt).toBe('function');
+    expect(typeof result.current.permanentlyDismissPendingPrompt).toBe(
+      'function',
+    );
     expect(typeof result.current.setAutoGuideEnabled).toBe('function');
     expect(typeof result.current.resetProgression).toBe('function');
   });
@@ -118,7 +120,9 @@ describe('Provider + useAutoGuide integration', () => {
     expect(result.current.pendingAutoPrompt).toBeNull();
     expect(result.current.activeGuide).toBeNull();
     // Fatigue should have persisted via the Provider's updateFatigue path
-    const stored = JSON.parse(localStorage.getItem('unicorn:test-tool') ?? '{}');
+    const stored = JSON.parse(
+      localStorage.getItem('unicorn:test-tool') ?? '{}',
+    );
     expect(stored.fatigue?.[autoGuide.id]?.dismissCount).toBe(1);
   });
 
@@ -140,7 +144,9 @@ describe('Provider + useAutoGuide integration', () => {
 
     expect(result.current.pendingAutoPrompt).toBeNull();
 
-    const stored = JSON.parse(localStorage.getItem('unicorn:test-tool') ?? '{}');
+    const stored = JSON.parse(
+      localStorage.getItem('unicorn:test-tool') ?? '{}',
+    );
     expect(stored.fatigue?.[autoGuide.id]?.permanentlyDismissed).toBe(true);
   });
 
@@ -158,7 +164,9 @@ describe('Provider + useAutoGuide integration', () => {
 
     expect(result.current.pendingAutoPrompt).toBeNull();
 
-    const stored = JSON.parse(localStorage.getItem('unicorn:test-tool') ?? '{}');
+    const stored = JSON.parse(
+      localStorage.getItem('unicorn:test-tool') ?? '{}',
+    );
     expect(stored.autoGuideEnabled).toBe(false);
   });
 
@@ -181,7 +189,9 @@ describe('Provider + useAutoGuide integration', () => {
       result.current.resetProgression();
     });
 
-    const stored = JSON.parse(localStorage.getItem('unicorn:test-tool') ?? '{}');
+    const stored = JSON.parse(
+      localStorage.getItem('unicorn:test-tool') ?? '{}',
+    );
     expect(stored.fatigue).toEqual({});
     expect(stored.completedGuides).toEqual([]);
     expect(stored.autoGuideEnabled).toBe(true);
@@ -223,7 +233,9 @@ describe('Provider + useAutoGuide integration', () => {
     );
 
     // Before onToolOpen: no badge
-    expect(getByTestId('probe').getAttribute('data-unicorn-auto-badge')).toBeNull();
+    expect(
+      getByTestId('probe').getAttribute('data-unicorn-auto-badge'),
+    ).toBeNull();
 
     act(() => {
       getByText('open').click();

@@ -94,9 +94,7 @@ export function Search() {
               role="option"
               onClick={() => handleSelect(guide)}
             >
-              <span className="unicorn-search-result-title">
-                {guide.title}
-              </span>
+              <span className="unicorn-search-result-title">{guide.title}</span>
               <span className="unicorn-search-result-desc">
                 {guide.description}
               </span>

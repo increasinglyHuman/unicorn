@@ -68,10 +68,7 @@ function cloneDefault(): ProgressionState {
 }
 
 /** Save progression state to localStorage */
-export function saveProgression(
-  tool: string,
-  state: ProgressionState,
-): void {
+export function saveProgression(tool: string, state: ProgressionState): void {
   try {
     localStorage.setItem(storageKey(tool), JSON.stringify(state));
   } catch {

@@ -219,7 +219,8 @@ export function UnicornProvider({
       pendingAutoPrompt: autoGuide.pendingPrompt,
       acceptPendingPrompt: autoGuide.acceptPendingPrompt,
       dismissPendingPrompt: autoGuide.dismissPendingPrompt,
-      permanentlyDismissPendingPrompt: autoGuide.permanentlyDismissPendingPrompt,
+      permanentlyDismissPendingPrompt:
+        autoGuide.permanentlyDismissPendingPrompt,
       autoGuideEnabled: progression.autoGuideEnabled,
       setAutoGuideEnabled,
       resetProgression,

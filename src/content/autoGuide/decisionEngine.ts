@@ -59,10 +59,16 @@ export function decideAutoGuide(
   }
 
   const autoCandidates = candidates
-    .filter((g): g is GuideContent & { autoTrigger: NonNullable<GuideContent['autoTrigger']> } =>
-      g.autoTrigger !== undefined,
+    .filter(
+      (
+        g,
+      ): g is GuideContent & {
+        autoTrigger: NonNullable<GuideContent['autoTrigger']>;
+      } => g.autoTrigger !== undefined,
     )
-    .sort((a, b) => (b.autoTrigger.priority ?? 0) - (a.autoTrigger.priority ?? 0));
+    .sort(
+      (a, b) => (b.autoTrigger.priority ?? 0) - (a.autoTrigger.priority ?? 0),
+    );
 
   if (autoCandidates.length === 0) {
     return { action: 'skip', reason: 'no-matching-guide' };
@@ -76,13 +82,19 @@ export function decideAutoGuide(
 
   for (const guide of autoCandidates) {
     if (completedGuides.has(guide.id)) {
-      firstGuideBlockedReason ??= { action: 'skip', reason: 'already-completed' };
+      firstGuideBlockedReason ??= {
+        action: 'skip',
+        reason: 'already-completed',
+      };
       continue;
     }
 
     const guideFatigue = fatigue[guide.id];
     if (guideFatigue?.permanentlyDismissed) {
-      firstGuideBlockedReason ??= { action: 'skip', reason: 'permanently-dismissed' };
+      firstGuideBlockedReason ??= {
+        action: 'skip',
+        reason: 'permanently-dismissed',
+      };
       continue;
     }
 
@@ -104,7 +116,9 @@ export function decideAutoGuide(
   if (!selected) {
     // Every candidate was guide-specifically blocked; surface the first reason.
     // The null check above guarantees firstGuideBlockedReason is set if we got here.
-    return firstGuideBlockedReason ?? { action: 'skip', reason: 'no-matching-guide' };
+    return (
+      firstGuideBlockedReason ?? { action: 'skip', reason: 'no-matching-guide' }
+    );
   }
 
   // Session-level checks (apply regardless of which guide was selected).
