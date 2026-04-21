@@ -56,13 +56,13 @@ Every guide can link out to external docs, videos, or tutorials when in-app dept
 ### Install
 
 ```bash
-npm install @poqpoq/unicorn
+npm install @increasinglyhuman/unicorn
 ```
 
 ### Integrate
 
 ```tsx
-import { UnicornProvider, Guide, Search, useUnicorn } from '@poqpoq/unicorn';
+import { UnicornProvider, Guide, Search, useUnicorn } from '@increasinglyhuman/unicorn';
 import myContent from './unicorn-content';
 
 function App() {
@@ -89,7 +89,7 @@ function BrushSelector() {
 ### Author Content
 
 ```typescript
-import type { ContentPackage } from '@poqpoq/unicorn';
+import type { ContentPackage } from '@increasinglyhuman/unicorn';
 
 const content: ContentPackage = {
   tool: 'my-app',

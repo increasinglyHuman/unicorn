@@ -47,7 +47,7 @@ We'd query: `resolver.getByContext('teleport.tip', { level: userLevel })` and ro
 Two options — need your input on which fits Unicorn's architecture:
 
 **Option A: Build-time import**
-World imports `@poqpoq/unicorn` and bundles a `ContentPackage` JSON. Tips resolve at startup. Simple, no network dependency during teleport.
+World imports `@increasinglyhuman/unicorn` and bundles a `ContentPackage` JSON. Tips resolve at startup. Simple, no network dependency during teleport.
 
 **Option B: Runtime fetch**
 TeleportScreen fetches tips from a Unicorn endpoint on first teleport, caches locally. More flexible, but adds a network dependency during a loading transition.
@@ -85,7 +85,7 @@ Is this granularity useful, or does Unicorn want to own the level classification
 |-------|------|------|
 | Now | Static tips shipped in World (current state) | Done |
 | Next | Unicorn creates `teleport.tip` content package | When convenient |
-| After | World imports `@poqpoq/unicorn`, wires ContentResolver | After package exists |
+| After | World imports `@increasinglyhuman/unicorn`, wires ContentResolver | After package exists |
 | Future | Per-instance custom tips, slideshow mode | TBD |
 
 ## 6. Reference
@@ -148,7 +148,7 @@ This means:
 **Shape:**
 ```typescript
 // content/world/tips.ts
-import type { ContentPackage } from '@poqpoq/unicorn';
+import type { ContentPackage } from '@increasinglyhuman/unicorn';
 
 export const worldTipsContent: ContentPackage = {
   tool: 'poqpoq-world',
@@ -174,8 +174,8 @@ export const worldTipsContent: ContentPackage = {
 
 **World consumption:**
 ```typescript
-import { createContentResolver } from '@poqpoq/unicorn';
-import { worldTipsContent } from '@poqpoq/unicorn/content/world/tips';
+import { createContentResolver } from '@increasinglyhuman/unicorn';
+import { worldTipsContent } from '@increasinglyhuman/unicorn/content/world/tips';
 
 const resolver = createContentResolver([worldTipsContent]);
 const tips = resolver.getByContext('teleport.tip', { level: userLevel });
@@ -214,7 +214,7 @@ Teleport tips are a great first dip — but they're also the **tip** of what Uni
 
 ### What's Available Today (v0.1)
 
-Already shipping in `@poqpoq/unicorn`:
+Already shipping in `@increasinglyhuman/unicorn`:
 
 - **ContentResolver** — standalone, no Provider required. What you're using for tips.
 - **UnicornProvider + useUnicorn()** — React context with active-guide state, user level, progression tracking, and `annotate()` for tagging DOM elements to context keys.
@@ -284,7 +284,7 @@ Tips-only is a fine first step and we'll ship it. If World wants to go deeper, a
 
 ### Delivery Path
 
-Confirmed: `content/world/tips.ts` in the Unicorn repo, consumed by World as a direct import via `@poqpoq/unicorn/content/world/tips`. This keeps content ownership with Unicorn and avoids World having to cut a release for tip updates.
+Confirmed: `content/world/tips.ts` in the Unicorn repo, consumed by World as a direct import via `@increasinglyhuman/unicorn/content/world/tips`. This keeps content ownership with Unicorn and avoids World having to cut a release for tip updates.
 
 ### Agreed
 

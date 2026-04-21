@@ -93,7 +93,7 @@ The host never decides whether to show guidance. It just reports what happened. 
 The simplest integration: call `onToolOpen` when a panel or tool mounts.
 
 ```tsx
-import { useUnicorn } from '@poqpoq/unicorn';
+import { useUnicorn } from '@increasinglyhuman/unicorn';
 
 function BuildPanel() {
   const { onToolOpen } = useUnicorn();
@@ -117,7 +117,7 @@ That's it. The host app's job is done. Unicorn handles everything else.
 For teams that prefer declarative integration:
 
 ```tsx
-import { UnicornWatch } from '@poqpoq/unicorn';
+import { UnicornWatch } from '@increasinglyhuman/unicorn';
 
 function BuildPanel() {
   return (
@@ -317,14 +317,14 @@ localStorage: unicorn:poqpoq-world
 ### Step 1: Install UnicornNotes
 
 ```bash
-npm install @poqpoq/unicorn
+npm install @increasinglyhuman/unicorn
 ```
 
 ### Step 2: Wrap Your App
 
 ```tsx
-import { UnicornProvider, Guide, Search } from '@poqpoq/unicorn';
-import { AutoGuidePrompt } from '@poqpoq/unicorn';
+import { UnicornProvider, Guide, Search } from '@increasinglyhuman/unicorn';
+import { AutoGuidePrompt } from '@increasinglyhuman/unicorn';
 import myContent from './unicorn-content';
 
 function App() {
@@ -551,7 +551,7 @@ unicorn-content/                    # dedicated repo
 │   └── social/
 ├── animator/
 ├── skinner/
-└── package.json                    # publishable as @poqpoq/unicorn-content-*
+└── package.json                    # publishable as @increasinglyhuman/unicorn-content-*
 ```
 
 ### Runtime Delivery: Apache Static Files (NOT NEXUS)

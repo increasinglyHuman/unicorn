@@ -1,5 +1,5 @@
 /**
- * Public entry point — the full surface exported to consumers of @poqpoq/unicorn.
+ * Public entry point — the full surface exported to consumers of @increasinglyhuman/unicorn.
  * Anything not re-exported here is internal. This file must stay tree-shakeable:
  * re-export named symbols only, never side-effecting modules.
  *

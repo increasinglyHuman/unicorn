@@ -148,8 +148,8 @@ Click and drag on the terrain to sculpt. Hold Shift to invert the brush action.
 Host applications integrate Unicorn with minimal boilerplate:
 
 ```jsx
-import { UnicornProvider, UnicornTrigger, useUnicorn } from '@poqpoq/unicorn';
-import worldContent from '@poqpoq/unicorn-content-world';
+import { UnicornProvider, UnicornTrigger, useUnicorn } from '@increasinglyhuman/unicorn';
+import worldContent from '@increasinglyhuman/unicorn-content-world';
 
 function App() {
   return (
@@ -221,7 +221,7 @@ reviewedAt: 2026-03-15
 
 ### Content Delivery Strategy
 
-- **Bundled content** — NPM packages per tool (`@poqpoq/unicorn-content-world`)
+- **Bundled content** — NPM packages per tool (`@increasinglyhuman/unicorn-content-world`)
 - **Lazy loaded** — Content fetched on demand, not at app startup
 - **Versioned** — Content packages version-locked to tool releases
 - **Shared content** — Cross-tool content (navigation, account, common patterns) in a shared package
