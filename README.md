@@ -273,6 +273,14 @@ src/
 
 ---
 
+## Security Notes
+
+**Content trust boundary.** Guide step bodies (`steps[].body`) are rendered as HTML via `dangerouslySetInnerHTML`. This is intentional — it lets content authors emphasize terms, link within prose, and use basic markup. The trade-off is that step bodies must come from a trusted source.
+
+For the BlackBox ecosystem this is safe: content is AI-drafted and human-reviewed (see ADR-001), shipped as versioned `ContentPackage` entries alongside the host app, never user-submitted at runtime.
+
+**If you build on Unicorn in a different context — especially one where guide content could be authored or influenced by end users — sanitize `steps[].body` before it reaches the ContentPackage.** Treat the body string as untrusted HTML and run it through DOMPurify or equivalent. Unicorn does not do this for you; it assumes the content you pass is content you trust.
+
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
