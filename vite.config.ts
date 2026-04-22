@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     dts({
-      include: ['src'],
+      include: ['src', 'content'],
       exclude: [
         'src/**/*.test.ts',
         'src/**/*.test.tsx',
@@ -17,10 +17,14 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'Unicorn',
+      // Multi-entry build: main library + per-tool content packages.
+      // Object-entry syntax tells Vite to preserve each entry's path in dist/,
+      // so `content/world/tips.ts` emits to `dist/content/world/tips.{js,cjs}`.
+      entry: {
+        unicorn: resolve(__dirname, 'src/index.ts'),
+        'content/world/tips': resolve(__dirname, 'content/world/tips.ts'),
+      },
       formats: ['es', 'cjs'],
-      fileName: 'unicorn',
     },
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime'],

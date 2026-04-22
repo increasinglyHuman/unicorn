@@ -1,16 +1,21 @@
 {
   "name": "@increasinglyhuman/unicorn",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Universal guidance framework for the BlackBox Creative Suite and poqpoq World ecosystem",
   "type": "module",
   "main": "./dist/unicorn.cjs",
   "module": "./dist/unicorn.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/src/index.d.ts",
       "import": "./dist/unicorn.js",
       "require": "./dist/unicorn.cjs"
+    },
+    "./content/world/tips": {
+      "types": "./dist/content/world/tips.d.ts",
+      "import": "./dist/content/world/tips.js",
+      "require": "./dist/content/world/tips.cjs"
     }
   },
   "files": [
@@ -20,7 +25,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/fix-content-types.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

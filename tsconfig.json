@@ -15,12 +15,12 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "noEmit": true,
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "content"],
   "exclude": [
     "node_modules",
     "dist",
