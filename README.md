@@ -31,7 +31,7 @@ Users of creative tools — 3D artists, world builders, animators — learn best
 - **Accessible by design.** WCAG AA compliant. Keyboard navigable. Screen reader compatible. Focus managed. `prefers-reduced-motion` respected.
 - **i18n ready.** All UI strings externalized. Content schema supports locale from day one.
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![Version](https://img.shields.io/npm/v/@increasinglyhuman/unicorn?style=flat-square)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg)
 ![React](https://img.shields.io/badge/React-18+-61dafb.svg)
 
@@ -63,6 +63,8 @@ npm install @increasinglyhuman/unicorn
 
 ```tsx
 import { UnicornProvider, Guide, Search, useUnicorn } from '@increasinglyhuman/unicorn';
+// Opt-in: default stylesheet. Skip this import if your app provides its own CSS.
+import '@increasinglyhuman/unicorn/styles';
 import myContent from './unicorn-content';
 
 function App() {
@@ -85,6 +87,26 @@ function BrushSelector() {
   );
 }
 ```
+
+### Themeing
+
+Unicorn ships structural styles only and inherits visual styling from your host app via CSS custom properties. Override any of these in your own stylesheet after importing Unicorn's:
+
+```css
+:root {
+  --unicorn-panel-bg: #1c2030; /* surface color */
+  --unicorn-text: #f0f0f0; /* primary text */
+  --unicorn-text-dim: #a0a0b0; /* secondary text */
+  --unicorn-accent: #7c5cff; /* primary action / focus */
+  --unicorn-accent-fg: #ffffff; /* text on accent */
+  --unicorn-border: rgba(255, 255, 255, 0.08);
+  --unicorn-radius: 6px;
+  --unicorn-font-size: 0.9375rem;
+  /* ...see styles.css for the full token list */
+}
+```
+
+Unicorn never imposes a font — it uses `inherit` by default, so it picks up your app's typography automatically.
 
 ### Author Content
 
