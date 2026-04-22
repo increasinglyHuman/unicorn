@@ -310,3 +310,84 @@ Acknowledged the full-stack pitch. We're interested but want to sequence it righ
 Go ahead and author those tips. Looking forward to seeing them.
 
 — World
+
+---
+---
+
+## Unicorn: Shipped (2026-04-22)
+
+**From:** Unicorn Team
+**Status:** Done — ready for your integration
+
+### What's Live on npm
+
+**`@increasinglyhuman/unicorn@0.2.1`** is published and installable.
+
+```bash
+npm install @increasinglyhuman/unicorn
+```
+
+Package page: https://www.npmjs.com/package/@increasinglyhuman/unicorn
+GitHub: https://github.com/increasinglyHuman/unicorn (tagged `v0.2.1`)
+
+**One small naming note:** the `@poqpoq` org name wasn't available on npm, so we registered under `@increasinglyhuman` instead (matches the GitHub org). Functionally identical; just update your import path accordingly.
+
+### Teleport Tips Content
+
+23 tips shipping in `content/world/tips.ts`, imported via the documented subpath:
+
+```typescript
+import { worldTipsContent } from '@increasinglyhuman/unicorn/content/world/tips';
+import { ContentResolver } from '@increasinglyhuman/unicorn';
+
+const resolver = new ContentResolver([worldTipsContent]);
+const tips = resolver.getByContext('teleport.tip', { level: userLevel });
+// → GuideContent[] filtered to guides at or below userLevel
+// Each tip's display text: tip.steps[0].body
+```
+
+**Distribution:**
+- 9 beginner (movement, social, basic concepts)
+- 9 intermediate (building, Landscaper, progression systems)
+- 5 advanced (combat math, link sets, faith mechanics)
+
+All bodies ≤80 characters, plain text, single-step guides per the schema we agreed on. Full list visible at [content/world/tips.ts](https://github.com/increasinglyHuman/unicorn/blob/main/content/world/tips.ts).
+
+### Content Quality Notes (Please Review)
+
+AI-drafted, single-pass authoring. **A human review pass from someone with deep World knowledge would be valuable before shipping to end users.** Watch for:
+
+- **Feature accuracy.** We drafted against a reconnaissance survey of the World codebase (keybindings from `LocalPlayerController.ts`, mechanics from `AKASHIC_MECHANICS.md`, etc.) but game-feel nuance is hard to catch from docs alone. If "Press R to lock run mode" is phrased wrong for how it actually works, let us know.
+- **Level calibration.** Beginner tips assume a brand-new user; advanced tips assume familiarity with combat stat math. Middle band is judgment. Flag anything that's misplaced.
+- **Forward-looking features.** We avoided tips about quest UI (API not shipped per `QUEST_AKASHIC_RESOLUTION.md`) and the 6 inactive Attributes (DB-only per `AKASHIC_MECHANICS.md`). If that scope changed since our survey, we can add tips in v0.2.2.
+- **Voice.** We aimed for "friendly guide, respects intelligence, occasional small personality" over either dry manual or sales copy. Taste-check welcome.
+
+Easiest review workflow: read the 23 tips in the file, mark any you want changed (reword / re-level / remove / replace with something better), and drop a list below this separator. We'll cut a v0.2.2 with your edits.
+
+### On Your Side
+
+Your next step per the earlier plan:
+
+```typescript
+// In TeleportScreen.ts, replace the static TIPS array with:
+import { worldTipsContent } from '@increasinglyhuman/unicorn/content/world/tips';
+import { ContentResolver } from '@increasinglyhuman/unicorn';
+
+const resolver = new ContentResolver([worldTipsContent]);
+const tips = resolver
+  .getByContext('teleport.tip', { level: userLevel })
+  .map(g => g.steps[0].body);
+// Rotate through `tips` as before.
+```
+
+Let us know once you've wired it up, or if you hit any integration friction.
+
+### Still To Come
+
+Per the earlier roadmap, our next deliverables:
+
+- **v0.2.2** — your review edits (if any)
+- **v0.2.x** — base CSS (structural styles + host-app theme variable inheritance) — this is the gating artifact before you can comfortably start the UI-layer integration ADR on your side
+- **v0.3.x** — whatever your ADR ends up prioritizing
+
+— Unicorn
