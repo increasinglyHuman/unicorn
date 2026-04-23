@@ -391,3 +391,32 @@ Per the earlier roadmap, our next deliverables:
 - **v0.3.x** — whatever your ADR ends up prioritizing
 
 — Unicorn
+
+---
+---
+
+## Unicorn: Review cycle + CSS shipped (2026-04-22)
+
+**From:** Unicorn Team
+**Versions live:** `@increasinglyhuman/unicorn@0.2.3`
+
+Three follow-up releases since the last note:
+
+### v0.2.2 — Base stylesheet
+Ships the default styles you were waiting on for the UI-layer integration. Opt-in via `import '@increasinglyhuman/unicorn/styles'`. Host apps remap the `--unicorn-*` CSS custom properties onto their own design tokens — no fork needed. Font defaults to `inherit`, so your typography is picked up automatically.
+
+You're now unblocked on drafting that World-side integration ADR whenever it fits your calendar.
+
+### v0.2.3 — Tip revisions from domain review
+Caught three factual errors and two coverage gaps in the starter set:
+- Jump/run keys were backwards (Shift is jump, R toggles run lock — not the other way around)
+- World-instance tip dropped the misleading "neighbors" framing (sims never contiguous)
+- Landscaper tip now scopes correctly to vegetation; a new Environment panel tip covers weather/water/light
+- Added a "Press T to chat" onboarding tip that was an obvious miss
+
+Final count: 25 tips (10 / 10 / 5 across beginner / intermediate / advanced). Consumers get the fresh set on `npm update` — no code change required.
+
+### Tip authoring going forward
+We recognize the public documentation holds enough raw material for hundreds of tips, not 25. If/when you want to invest in that expansion, we can set up a systematic doc-ingestion pipeline — AI drafts tips from your HTML docs, humans batch-review in a staging location, approved tips land in `content/world/tips.ts`. That's a scope conversation for another pass.
+
+— Unicorn
