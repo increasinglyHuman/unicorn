@@ -52,19 +52,19 @@ export const worldTipsContent: ContentPackage = {
       ],
     },
     {
-      id: 'world-tip-run',
+      id: 'world-tip-jump-run',
       tool: 'poqpoq-world',
       context: 'teleport.tip',
       mode: 'coach',
       level: 'beginner',
       locale: 'en',
       tags: ['teleport', 'tip', 'movement'],
-      title: 'Running',
-      description: 'R toggles run, Shift runs while held',
+      title: 'Jump and Run',
+      description: 'Shift jumps, R toggles run mode',
       steps: [
         {
           title: 'Tip',
-          body: 'Hold Shift to run. Press R to lock it on so your fingers can relax.',
+          body: 'Shift jumps, R toggles run mode. Hands stay on WASD.',
         },
       ],
     },
@@ -137,6 +137,23 @@ export const worldTipsContent: ContentPackage = {
       ],
     },
     {
+      id: 'world-tip-chat-open',
+      tool: 'poqpoq-world',
+      context: 'teleport.tip',
+      mode: 'coach',
+      level: 'beginner',
+      locale: 'en',
+      tags: ['teleport', 'tip', 'social', 'chat'],
+      title: 'Open Chat',
+      description: 'T opens chat',
+      steps: [
+        {
+          title: 'Tip',
+          body: 'Press T to chat. Say hello — worlds warm up fast.',
+        },
+      ],
+    },
+    {
       id: 'world-tip-chat-channels',
       tool: 'poqpoq-world',
       context: 'teleport.tip',
@@ -183,7 +200,7 @@ export const worldTipsContent: ContentPackage = {
       steps: [
         {
           title: 'Tip',
-          body: 'Each world is its own instance — different terrain, different neighbors.',
+          body: 'Each world is its own place — own terrain, own residents, own rules.',
         },
       ],
     },
@@ -285,11 +302,28 @@ export const worldTipsContent: ContentPackage = {
       locale: 'en',
       tags: ['teleport', 'tip', 'build', 'landscape'],
       title: 'Landscaper',
-      description: 'Vegetation, wind, water, season',
+      description: 'Trees, rocks, grasses, small plants',
       steps: [
         {
           title: 'Tip',
-          body: 'Launch Landscaper to scatter vegetation and tune wind, water, and season.',
+          body: 'Landscaper scatters the living things — trees, rocks, grasses, small plants.',
+        },
+      ],
+    },
+    {
+      id: 'world-tip-environment-panel',
+      tool: 'poqpoq-world',
+      context: 'teleport.tip',
+      mode: 'coach',
+      level: 'intermediate',
+      locale: 'en',
+      tags: ['teleport', 'tip', 'environment', 'weather'],
+      title: 'Environment Panel',
+      description: 'Weather, water, and light',
+      steps: [
+        {
+          title: 'Tip',
+          body: 'Environment panel rules weather, water, and light. Tune dusk to taste.',
         },
       ],
     },

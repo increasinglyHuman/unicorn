@@ -1,6 +1,6 @@
 {
   "name": "@increasinglyhuman/unicorn",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Universal guidance framework for the BlackBox Creative Suite and poqpoq World ecosystem",
   "type": "module",
   "main": "./dist/unicorn.cjs",
