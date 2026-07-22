@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 import type { GuideContent, UserLevel, ContentPackage } from '../types';
+import type { HelpFlavor, HelpToggleKey } from '../types/helpPrefs';
 import type { UnicornStrings } from '../i18n';
 
 /**
@@ -52,12 +53,33 @@ export interface UnicornContextValue {
   dismissPendingPrompt: () => void;
   /** User clicked "Don't ask again" — this guide won't auto-prompt again. */
   permanentlyDismissPendingPrompt: () => void;
-  /** Whether auto-guides are enabled globally (user-controllable). */
+  /**
+   * @deprecated Back-compat alias for `isHelpEnabled('coach')` (ADR-003). Reads the
+   * coach flavor toggle, which subsumes the old global auto-guide switch. Prefer
+   * `isHelpEnabled` in new code; this remains so existing host Settings UIs keep working.
+   */
   autoGuideEnabled: boolean;
-  /** Toggle the global auto-guide switch (exposed for host settings UIs). */
+  /**
+   * @deprecated Back-compat alias for `setHelpEnabled('coach', enabled)` (ADR-003).
+   * Prefer `setHelpEnabled` in new code.
+   */
   setAutoGuideEnabled: (enabled: boolean) => void;
   /** Reset all progression (completed, dismissed, fatigue) — "show me the tutorials again". */
   resetProgression: () => void;
+
+  // --- Help preferences (ADR-003) ---
+  /**
+   * Whether a help flavor is enabled for this app, resolving per-app → global →
+   * default-enabled precedence (master:false at either scope forces off). Called with
+   * no argument, returns the effective master state. Lib-rendered surfaces gate on this;
+   * content-only consumers (e.g. teleport tips) must call it themselves before rendering.
+   */
+  isHelpEnabled: (flavor?: HelpFlavor) => boolean;
+  /**
+   * Toggle a help flavor (or 'master') and persist. Writes to this app's preference
+   * layer. Bind Settings toggles to this.
+   */
+  setHelpEnabled: (key: HelpToggleKey, enabled: boolean) => void;
 }
 
 export const UnicornContext = createContext<UnicornContextValue | null>(null);

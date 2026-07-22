@@ -1,29 +1,39 @@
 /**
- * localStorage-backed HelpPrefStore — the v1 reference implementation of the
- * cross-app help-preference store proposed in ADR-003.
+ * localStorage-backed HelpPrefStore — the v1 implementation of the cross-app
+ * help-preference store (ADR-003 lib side / World ADR-174 consumer side).
  *
- * STATUS: Design stub for ADR-003 (Centralized Help Preferences). Not yet exported
- * from the public entry point.
+ * Persistence model (two departures from ProgressionState, src/utils/progression.ts):
+ *   1. SHARED GLOBAL KEY, not per-tool. ProgressionState uses `unicorn:<tool>` so apps
+ *      don't collide — correct for completion state, which IS per-app. Help prefs are
+ *      the opposite: one user choice applies everywhere, so the global layer lives at a
+ *      single un-namespaced key. Same-origin suite ⇒ shared localStorage.
+ *   2. Cross-context notification via the 'storage' event, so a toggle flipped in one
+ *      app's Settings updates a live guide in another tab without a reload.
  *
- * Two deliberate departures from ProgressionState persistence (src/utils/progression.ts):
- *   1. SHARED KEY, not per-tool. ProgressionState uses `unicorn:<tool>` so apps don't
- *      collide — correct for completion state, which IS per-app. Help prefs are the
- *      opposite: one user choice must apply everywhere, so this uses a single
- *      un-namespaced key (STORAGE_KEY below). Same-origin suite ⇒ shared localStorage.
- *   2. Cross-context notification via the 'storage' event, so a toggle flipped in
- *      Animator's Settings updates a live guide in World's tab without a reload.
+ * Per-app override (ADR-174 §R3): constructing with an `appId` adds a per-app layer at
+ * `unicorn:help-prefs:<appId>` that is read AHEAD of the global layer. Resolution
+ * precedence is per-app → global → default-enabled, with master:false at either scope
+ * forcing off (see resolveHelpEnabled). The public method signatures are unchanged —
+ * only the constructor gained an optional argument, exactly as World requested, so a
+ * per-app UI can ship later without an API break.
  *
- * Silent-fail discipline matches progression.ts: SSR, private browsing, and quota
- * errors degrade to in-memory defaults, never a crash. Persistence is a nicety.
+ * Write scope: a store writes to the layer it was constructed for — an app-scoped store
+ * (appId given) writes the per-app key; a global store (no appId) writes the global key.
+ * getPreferences() likewise returns that own layer (what setHelpEnabled mutates), while
+ * isHelpEnabled() always resolves the full precedence stack.
  *
  * The seam: a future server-backed store (cross-device sync via the identity service)
- * implements the same HelpPrefStore interface. Consumers never change. Per ADR-001's
- * "library not a service" principle and the Good Neighbor Policy, that server binding
- * is out of scope here — this file stays localStorage-only.
+ * implements the same HelpPrefStore interface — consumers never change. Per ADR-001's
+ * "library not a service" principle and the Good Neighbor Policy, that server binding is
+ * out of scope here; this file stays localStorage-only.
  *
- * Depends on: ../types/helpPrefs (HelpPrefStore, HelpPreferences, HelpToggleKey),
+ * Silent-fail discipline matches progression.ts: SSR, private browsing, and quota errors
+ * degrade to in-memory defaults, never a crash.
+ *
+ * Depends on: ../types/helpPrefs (HelpPrefStore, HelpPreferences, HelpToggleKey, HelpFlavor),
  *             ./classifyFlavor (resolveHelpEnabled), browser localStorage
- * Depended on by: UnicornProvider (constructs one, provides via context), Settings UIs
+ * Depended on by: UnicornProvider (constructs one scoped to `tool`, provides via context),
+ *                 Settings UIs (global + per-app override panels)
  */
 
 import type {
@@ -34,71 +44,95 @@ import type {
 } from '../types/helpPrefs';
 import { resolveHelpEnabled } from './classifyFlavor';
 
-/** Shared across the whole suite — intentionally NOT namespaced per tool. */
-const STORAGE_KEY = 'unicorn:help-prefs';
+/** The global layer — intentionally NOT namespaced per tool. Shared suite-wide. */
+const GLOBAL_KEY = 'unicorn:help-prefs';
 
-const DEFAULT_PREFS: HelpPreferences = { master: true, flavors: {} };
+/** Per-app override layer key. Read ahead of GLOBAL_KEY when an appId is set. */
+function appKey(appId: string): string {
+  return `${GLOBAL_KEY}:${appId}`;
+}
 
-function readPrefs(): HelpPreferences {
+function emptyPrefs(): HelpPreferences {
+  return { master: true, flavors: {} };
+}
+
+function readKey(key: string): HelpPreferences {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_PREFS, flavors: {} };
+    const raw = localStorage.getItem(key);
+    if (!raw) return emptyPrefs();
     const parsed = JSON.parse(raw) as Partial<HelpPreferences>;
-    return {
-      master: parsed.master ?? true,
-      flavors: parsed.flavors ?? {},
-    };
+    return { master: parsed.master ?? true, flavors: parsed.flavors ?? {} };
   } catch {
-    return { ...DEFAULT_PREFS, flavors: {} };
+    return emptyPrefs();
   }
 }
 
-function writePrefs(prefs: HelpPreferences): void {
+function writeKey(key: string, prefs: HelpPreferences): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    localStorage.setItem(key, JSON.stringify(prefs));
   } catch {
-    // localStorage unavailable — degrade silently, in-memory value still served.
+    // localStorage unavailable — degrade silently; in-memory value still served.
   }
 }
 
 /**
- * Construct a localStorage-backed help-preference store. One instance per app is
- * enough; multiple instances stay consistent because they share the storage key
- * and the 'storage' event.
+ * Construct a localStorage-backed help-preference store.
+ *
+ * @param appId optional per-app scope. When provided, an override layer at
+ *   `unicorn:help-prefs:<appId>` is read ahead of the shared global layer, and writes
+ *   from this store target that per-app layer. Omit for a global store (writes global).
  */
-export function createLocalStorageHelpPrefStore(): HelpPrefStore {
-  let prefs = readPrefs();
-  const listeners = new Set<(p: HelpPreferences) => void>();
+export function createLocalStorageHelpPrefStore(appId?: string): HelpPrefStore {
+  const ownKey = appId ? appKey(appId) : GLOBAL_KEY;
 
+  // Cached layers. `own` is what this store writes; the precedence stack is what it reads.
+  let ownPrefs = readKey(ownKey);
+  let globalPrefs = appId ? readKey(GLOBAL_KEY) : ownPrefs;
+
+  const listeners = new Set<(p: HelpPreferences) => void>();
   const emit = () => {
-    for (const listener of listeners) listener(prefs);
+    for (const listener of listeners) listener(ownPrefs);
   };
 
-  // Cross-tab / cross-app sync: another origin-sharing app wrote a new value.
-  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  /** Precedence stack, most-specific-first. */
+  const layers = (): HelpPreferences[] =>
+    appId ? [ownPrefs, globalPrefs] : [globalPrefs];
+
+  // Cross-tab / cross-app sync: another origin-sharing context wrote a layer we read.
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.addEventListener === 'function'
+  ) {
     window.addEventListener('storage', (e) => {
-      if (e.key !== STORAGE_KEY) return;
-      prefs = readPrefs();
-      emit();
+      if (e.key === ownKey) {
+        ownPrefs = readKey(ownKey);
+        if (!appId) globalPrefs = ownPrefs;
+        emit();
+      } else if (appId && e.key === GLOBAL_KEY) {
+        globalPrefs = readKey(GLOBAL_KEY);
+        emit();
+      }
     });
   }
 
   return {
     isHelpEnabled(flavor?: HelpFlavor): boolean {
-      return resolveHelpEnabled(prefs, flavor);
+      return resolveHelpEnabled(layers(), flavor);
     },
 
     setHelpEnabled(key: HelpToggleKey, enabled: boolean): void {
-      prefs =
+      ownPrefs =
         key === 'master'
-          ? { ...prefs, master: enabled }
-          : { ...prefs, flavors: { ...prefs.flavors, [key]: enabled } };
-      writePrefs(prefs);
+          ? { ...ownPrefs, master: enabled }
+          : { ...ownPrefs, flavors: { ...ownPrefs.flavors, [key]: enabled } };
+      if (!appId) globalPrefs = ownPrefs; // global store: own layer IS the global layer
+      writeKey(ownKey, ownPrefs);
       emit();
     },
 
     getPreferences(): HelpPreferences {
-      return { master: prefs.master, flavors: { ...prefs.flavors } };
+      // Return this store's OWN layer (what setHelpEnabled mutates), not the merge.
+      return { master: ownPrefs.master, flavors: { ...ownPrefs.flavors } };
     },
 
     subscribe(listener: (p: HelpPreferences) => void): () => void {

@@ -30,12 +30,14 @@ import {
   recordPrompt,
 } from '../../content/autoGuide';
 import type { ContentResolver } from '../../content';
+import { classifyFlavor } from '../../prefs';
 import type {
   AutoGuideConfig,
   FatigueRecord,
   GuideContent,
   UserLevel,
 } from '../../types';
+import type { HelpFlavor } from '../../types/helpPrefs';
 
 export interface UseAutoGuideArgs {
   resolver: ContentResolver;
@@ -43,8 +45,13 @@ export interface UseAutoGuideArgs {
   userLevel: UserLevel;
   completedGuides: Set<string>;
   fatigue: FatigueRecord;
-  /** Global user opt-out; AND-ed with config.enabled. */
-  autoGuideEnabled: boolean;
+  /**
+   * Per-flavor help gate (ADR-003). A candidate is eligible for proactive surfacing
+   * only if its classified flavor is enabled. This refines — and subsumes — the old
+   * blanket `autoGuideEnabled` switch: a disabled 'coach' still blocks coach slide-ins,
+   * but an enabled 'walkthroughs' can still auto-offer a first-use tour.
+   */
+  isHelpEnabled: (flavor?: HelpFlavor) => boolean;
   /** True when a regular guide is open — defer auto-guides while that's true. */
   isAnotherGuideActive: boolean;
   /** Persistence hook from the Provider — replaces the fatigue record. */
@@ -100,18 +107,18 @@ export function useAutoGuide(args: UseAutoGuideArgs): UseAutoGuideResult {
         userLevel,
         completedGuides,
         fatigue,
-        autoGuideEnabled,
+        isHelpEnabled,
         isAnotherGuideActive,
         updateFatigue,
         openGuide,
       } = argsRef.current;
 
-      const effectiveConfig: AutoGuideConfig = {
-        ...config,
-        enabled: config.enabled && autoGuideEnabled,
-      };
-
-      const candidates = resolver.getByContext(context, { level: userLevel });
+      // Gate proactive surfacing per-flavor (ADR-003): only guides whose classified
+      // flavor is enabled reach the decision engine. A disabled flavor (or master off,
+      // which isHelpEnabled folds in) yields no candidates ⇒ the engine skips.
+      const candidates = resolver
+        .getByContext(context, { level: userLevel })
+        .filter((guide) => isHelpEnabled(classifyFlavor(guide)));
 
       const decision = decideAutoGuide({
         context,
@@ -122,7 +129,7 @@ export function useAutoGuide(args: UseAutoGuideArgs): UseAutoGuideResult {
         lastAutoPromptAt,
         isAnotherGuideActive,
         now: Date.now(),
-        config: effectiveConfig,
+        config,
       });
 
       if (decision.action !== 'show') return;
