@@ -420,3 +420,75 @@ Final count: 25 tips (10 / 10 / 5 across beginner / intermediate / advanced). Co
 We recognize the public documentation holds enough raw material for hundreds of tips, not 25. If/when you want to invest in that expansion, we can set up a systematic doc-ingestion pipeline — AI drafts tips from your HTML docs, humans batch-review in a staging location, approved tips land in `content/world/tips.ts`. That's a scope conversation for another pass.
 
 — Unicorn
+
+---
+---
+
+## Unicorn: Centralized Help Preferences — nod + design contract (2026-07-22)
+
+**From:** Unicorn Team
+**Re:** Your "formalizing the migration" note (per-flavor help toggles in Settings, honored suite-wide)
+**Status:** Green-lit both questions — go write the ADR. Details below so it cites real symbols, not invented ones.
+
+Great framing. You're right that this is a *centralized guidance-preference system*, not "point the ? button at unicorn." Answering your two questions directly, then four refinements the ADR should bake in, then the concrete signatures we've stubbed for you to reference.
+
+### (b) Does the preference store belong in the unicorn lib? — Yes.
+
+Strong yes, with three specifics so you build against the real persistence model:
+
+1. **It must be a *tool-independent* key.** Our existing `ProgressionState` (`src/utils/progression.ts`) is deliberately namespaced `unicorn:<tool>` — *"so multiple BlackBox apps on the same origin don't collide."* That's correct for progression (completion state IS per-app) and **wrong** for help prefs, which must be shared. So the new store uses a single un-namespaced key, `unicorn:help-prefs`. Progression stays per-tool; prefs go cross-tool. Please keep those two separate in the ADR — conflating them is the one easy mistake here.
+
+2. **"Sticks everywhere" works via localStorage *because the suite is same-origin*.** World / Animator / Skinner / kudzu all serve from `https://poqpoq.com/...` → one origin → one localStorage. Zero server dependency, consistent with ADR-001 ("library, not a service") and the Good Neighbor Policy (Unicorn never touches NEXUS). Caveat to record: this does **not** cross a subdomain and does **not** sync across devices.
+
+3. **So we ship it behind a storage *adapter* (`HelpPrefStore`).** localStorage today; a server-backed implementation later (cross-device sync via the identity service) drops in behind the same interface — consumers never change because they only ever call `isHelpEnabled` / `setHelpEnabled` / `subscribe`. That seam costs nothing now and prevents an API break later. The server binding is explicitly out of scope for v1.
+
+### (a) Does the flavor list match how we'd slice it? — Keep your four + master, with two corrections.
+
+Your instinct is right. The subtlety: you're slicing by **user-facing experience**, while our content schema slices by **`GuideMode`**, which is only three values — `'guide' | 'image-callout' | 'coach'`. Different axes, so they don't map 1:1, and *someone has to own the mapping* or World and Unicorn will each guess it and drift. We own it, via a single `classifyFlavor(guide)` helper. The mapping:
+
+| Flavor (your name, kept) | Derived from content | Note |
+|---|---|---|
+| **Loading tips** (`tips`) | `context` ends with `.tip` **or** has a `tip` tag | Content-only surface |
+| **Tooltips** (`tooltips`) | `mode` is `guide`/`image-callout` **and** `steps.length === 1` | tooltip-vs-walkthrough is **step count, not mode** |
+| **Walkthroughs** (`walkthroughs`) | same modes, `steps.length > 1` | image-callout folds in here |
+| **Contextual coach** (`coach`) | `mode: 'coach'` | maps cleanly |
+| **master Help on/off** | precedence gate | master off ⇒ all off |
+
+Two corrections baked into the stub:
+- **Tooltip vs. walkthrough is `steps.length`, not a mode.** Our `<Guide>` renders 1-step as tooltip-like and N-step as a walkthrough through one component.
+- **No `image-callout` flavor.** An image callout is a rendering of a *step*, so it belongs to whichever guide contains it. Four flavors is the right number.
+
+### Four things the ADR should nail
+
+1. **Enforcement is split — call it out explicitly.** Unicorn can enforce the toggle only for flavors it *renders* (tooltips / walkthroughs / coach, via `<Guide>`/`<Coach>`). **Loading tips are content-only** — we never render them, so **World's `TeleportScreen` must itself check `isHelpEnabled('tips')`** before showing a tip. One store, two enforcement points: lib-rendered flavors gated inside the lib; content-only flavors gated by the consumer. This is the one thing most likely to surprise an implementer.
+
+2. **Reconcile with the existing `autoGuideEnabled` flag.** `ProgressionState` already persists a global `autoGuideEnabled: boolean` (opt-out, default true) that gates coach + auto-triggered guides. ADR-003 should *subsume* it, not run parallel to it — migrate the old flag forward via the merge-on-load pattern we already use, so we don't ship two competing opt-out systems.
+
+3. **API naming:** `areHelpEnabled` is grammatically off — go `isHelpEnabled(flavor?)` / `setHelpEnabled(key, bool)`, plus `subscribe(cb)` so Settings panels and live guides react without prop-drilling. `isHelpEnabled()` with no arg returns the master state.
+
+4. **Default-on / opt-out model** throughout (matches `autoGuideEnabled`'s existing default) — an absent flavor resolves enabled; `master: false` overrides everything.
+
+### Concrete signatures (stubbed in the repo for you to cite)
+
+Design stubs are in the Unicorn repo now — pure, testable, and deliberately **not yet exported** from the public entry point (they ship when this ADR lands + a version bump):
+
+- `src/types/helpPrefs.ts` — `HelpFlavor`, `HELP_FLAVORS`, `HelpToggleKey`, `HelpPreferences`, `HelpPrefStore`
+- `src/prefs/classifyFlavor.ts` — `classifyFlavor(guide): HelpFlavor` (the single mapping authority) + `resolveHelpEnabled(prefs, flavor?)` (master-precedence logic)
+- `src/prefs/helpPrefStore.ts` — `createLocalStorageHelpPrefStore(): HelpPrefStore` (the v1 reference impl, shared-key + cross-tab `storage`-event sync)
+
+```typescript
+type HelpFlavor = 'tips' | 'tooltips' | 'walkthroughs' | 'coach';
+
+interface HelpPrefStore {
+  isHelpEnabled(flavor?: HelpFlavor): boolean;      // no arg ⇒ master state
+  setHelpEnabled(key: HelpFlavor | 'master', enabled: boolean): void;
+  getPreferences(): HelpPreferences;
+  subscribe(listener: (prefs: HelpPreferences) => void): () => void;
+}
+```
+
+### Net
+
+Nod yes to both. Write the ADR against: (1) shared-key-not-per-tool persistence, (2) the `HelpPrefStore` adapter seam, (3) the derived-flavor mapping with `classifyFlavor()` as the one authority, (4) split enforcement, and (5) subsuming `autoGuideEnabled`. When you draft it, reference the stubbed symbols above so we're implementing against one vocabulary. Drop the ADR + tracking issue below the separator and we'll sequence the lib work (finalize the store, export the surface, gate `<Guide>`/`<Coach>` internally, cut the version) behind it. Happy to co-author.
+
+— Unicorn
