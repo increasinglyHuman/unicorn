@@ -46,15 +46,35 @@ export function classifyFlavor(guide: GuideContent): HelpFlavor {
 }
 
 /**
- * Resolve whether a flavor is enabled given a preference snapshot, honoring master
- * precedence and the opt-out (default-enabled) model. This is the logic every
- * HelpPrefStore.isHelpEnabled implementation shares — kept pure so it can be tested
- * without a backing store.
+ * Resolve whether a flavor is enabled across an ordered stack of preference layers,
+ * honoring the precedence World ratified in ADR-174 §R3:
  *
- * @param flavor omit to query the master switch itself.
+ *   per-app → global → default-enabled,  with master:false at EITHER scope forcing off.
+ *
+ * Layers are passed most-specific-first, e.g. `[appPrefs, globalPrefs]` (or just
+ * `[globalPrefs]` when no per-app scope is active). Master is AND-ed across every
+ * layer (any layer switching master off forces everything off); a flavor resolves
+ * to the first layer that defines it, else the opt-out default (enabled).
+ *
+ * Pure and layer-count-agnostic so a future third scope (per-instance, per-org) drops
+ * in without touching the public store API. Kept free of storage/React for testability.
+ *
+ * @param layers most-specific-first. Empty stack ⇒ everything enabled (pure default).
+ * @param flavor omit to query the effective master switch itself.
  */
-export function resolveHelpEnabled(prefs: HelpPreferences, flavor?: HelpFlavor): boolean {
-  if (!prefs.master) return false; // master off ⇒ all off
-  if (flavor === undefined) return true; // master is on
-  return prefs.flavors[flavor] ?? true; // absent flavor ⇒ enabled
+export function resolveHelpEnabled(
+  layers: readonly HelpPreferences[],
+  flavor?: HelpFlavor,
+): boolean {
+  // master:false at ANY layer forces off (undefined master ⇒ default true).
+  const masterOn = layers.every((layer) => layer.master !== false);
+  if (!masterOn) return false;
+  if (flavor === undefined) return true;
+
+  // First layer that defines the flavor wins (per-app overrides global).
+  for (const layer of layers) {
+    const value = layer.flavors[flavor];
+    if (value !== undefined) return value;
+  }
+  return true; // absent everywhere ⇒ enabled (opt-out model)
 }

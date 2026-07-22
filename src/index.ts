@@ -30,6 +30,13 @@ export {
   clearFatigue,
 } from './content/autoGuide';
 
+// Help preferences (ADR-003)
+export {
+  classifyFlavor,
+  resolveHelpEnabled,
+  createLocalStorageHelpPrefStore,
+} from './prefs';
+
 // Types
 export type {
   UserLevel,
@@ -52,7 +59,12 @@ export type {
   DeferReason,
   SkipReason,
   AutoGuideDecisionInput,
+  HelpFlavor,
+  HelpToggleKey,
+  HelpPreferences,
+  HelpPrefStore,
 } from './types';
+export { HELP_FLAVORS } from './types';
 
 // i18n
 export { defaultStrings } from './i18n';

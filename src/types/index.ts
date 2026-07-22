@@ -23,3 +23,11 @@ export type {
   SkipReason,
   AutoGuideDecisionInput,
 } from './autoGuide';
+
+export type {
+  HelpFlavor,
+  HelpToggleKey,
+  HelpPreferences,
+  HelpPrefStore,
+} from './helpPrefs';
+export { HELP_FLAVORS } from './helpPrefs';

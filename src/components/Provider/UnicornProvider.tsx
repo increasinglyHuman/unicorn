@@ -1,4 +1,12 @@
-import { useState, useCallback, useMemo, type ReactNode } from 'react';
+import {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useReducer,
+  useRef,
+  type ReactNode,
+} from 'react';
 import { UnicornContext } from '../../context';
 import type {
   AutoGuideConfig,
@@ -7,10 +15,16 @@ import type {
   GuideContent,
   UserLevel,
 } from '../../types';
+import type {
+  HelpFlavor,
+  HelpPrefStore,
+  HelpToggleKey,
+} from '../../types/helpPrefs';
 import type { UnicornStrings } from '../../i18n';
 import { defaultStrings } from '../../i18n';
 import { ContentResolver } from '../../content';
 import { loadProgression, saveProgression } from '../../utils/progression';
+import { createLocalStorageHelpPrefStore } from '../../prefs';
 import { useAutoGuide } from './useAutoGuide';
 
 /**
@@ -73,6 +87,39 @@ export function UnicornProvider({
   );
 
   const [progression, setProgression] = useState(() => loadProgression(tool));
+
+  // Help-preference store (ADR-003), scoped to this tool as its per-app override layer
+  // (reads per-app → global → default). Constructed once; a subscribe-driven tick below
+  // makes its reads reactive. The legacy `autoGuideEnabled` opt-out is subsumed by the
+  // migration effect further down (it needs persistProgression, defined below).
+  const storeRef = useRef<HelpPrefStore | null>(null);
+  if (storeRef.current === null) {
+    storeRef.current = createLocalStorageHelpPrefStore(tool);
+  }
+  const helpPrefStore = storeRef.current;
+
+  // Force a re-render when help prefs change (this tab via setHelpEnabled, or another
+  // origin-sharing tab via the 'storage' event) so gated surfaces re-evaluate.
+  const [helpPrefsTick, bumpHelpPrefs] = useReducer((n: number) => n + 1, 0);
+  useEffect(
+    () => helpPrefStore.subscribe(() => bumpHelpPrefs()),
+    [helpPrefStore],
+  );
+
+  const isHelpEnabled = useCallback(
+    (flavor?: HelpFlavor) => helpPrefStore.isHelpEnabled(flavor),
+    // helpPrefsTick is intentionally in deps: it doesn't appear in the body, but bumping
+    // it must refresh this callback's identity so the memoized context value updates and
+    // gated consumers re-render with fresh pref reads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [helpPrefStore, helpPrefsTick],
+  );
+  const setHelpEnabled = useCallback(
+    (key: HelpToggleKey, enabled: boolean) =>
+      helpPrefStore.setHelpEnabled(key, enabled),
+    [helpPrefStore],
+  );
+
   const [activeGuide, setActiveGuide] = useState<GuideContent | null>(null);
   const [activeStep, setActiveStep] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -98,12 +145,28 @@ export function UnicornProvider({
     [persistProgression, progression],
   );
 
+  // Back-compat: the old global auto-guide switch was the on/off master for the whole
+  // auto-guide engine, so it maps to the help-pref master switch (ADR-003).
   const setAutoGuideEnabled = useCallback(
-    (enabled: boolean) => {
-      persistProgression({ ...progression, autoGuideEnabled: enabled });
-    },
-    [persistProgression, progression],
+    (enabled: boolean) => helpPrefStore.setHelpEnabled('master', enabled),
+    [helpPrefStore],
   );
+
+  // One-time subsume of the legacy per-tool `autoGuideEnabled` opt-out into master.
+  // Neutralizes the legacy flag after migrating so a later user re-enable is never
+  // clobbered on remount (idempotency comes from the persisted flag flip, not a marker).
+  const migratedRef = useRef(false);
+  useEffect(() => {
+    if (migratedRef.current) return;
+    migratedRef.current = true;
+    if (progression.autoGuideEnabled === false) {
+      helpPrefStore.setHelpEnabled('master', false);
+      persistProgression({ ...progression, autoGuideEnabled: true });
+    }
+    // Mount-only migration reading the initial progression snapshot; intentionally not
+    // re-run on progression changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // resetProgression is declared after useAutoGuide below so it can call into
   // autoGuide.resetSession() to also clear session-scoped state (cooldown,
@@ -167,7 +230,7 @@ export function UnicornProvider({
     userLevel,
     completedGuides,
     fatigue: progression.fatigue,
-    autoGuideEnabled: progression.autoGuideEnabled,
+    isHelpEnabled,
     isAnotherGuideActive: activeGuide !== null,
     updateFatigue,
     openGuide,
@@ -181,8 +244,11 @@ export function UnicornProvider({
       fatigue: {},
       autoGuideEnabled: true,
     });
+    // "Show me the tutorials again" re-enables the master switch (which subsumed the
+    // legacy auto-guide toggle). Individual flavor opt-outs are deliberate settings, kept.
+    helpPrefStore.setHelpEnabled('master', true);
     autoGuide.resetSession();
-  }, [persistProgression, userLevel, autoGuide]);
+  }, [persistProgression, userLevel, autoGuide, helpPrefStore]);
 
   const annotate = useCallback(
     (contextKey: string): Record<string, unknown> => {
@@ -221,8 +287,10 @@ export function UnicornProvider({
       dismissPendingPrompt: autoGuide.dismissPendingPrompt,
       permanentlyDismissPendingPrompt:
         autoGuide.permanentlyDismissPendingPrompt,
-      autoGuideEnabled: progression.autoGuideEnabled,
+      autoGuideEnabled: isHelpEnabled(),
       setAutoGuideEnabled,
+      isHelpEnabled,
+      setHelpEnabled,
       resetProgression,
     }),
     [
@@ -242,7 +310,8 @@ export function UnicornProvider({
       annotate,
       strings,
       autoGuide,
-      progression.autoGuideEnabled,
+      isHelpEnabled,
+      setHelpEnabled,
       setAutoGuideEnabled,
       resetProgression,
     ],

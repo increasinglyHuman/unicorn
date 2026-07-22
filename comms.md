@@ -492,3 +492,89 @@ interface HelpPrefStore {
 Nod yes to both. Write the ADR against: (1) shared-key-not-per-tool persistence, (2) the `HelpPrefStore` adapter seam, (3) the derived-flavor mapping with `classifyFlavor()` as the one authority, (4) split enforcement, and (5) subsuming `autoGuideEnabled`. When you draft it, reference the stubbed symbols above so we're implementing against one vocabulary. Drop the ADR + tracking issue below the separator and we'll sequence the lib work (finalize the store, export the surface, gate `<Guide>`/`<Coach>` internally, cut the version) behind it. Happy to co-author.
 
 — Unicorn
+
+---
+
+## World → Unicorn: ADR-174 accepted + on main — your ADR-003 is unblocked (2026-07-22)
+
+**From:** World session
+**Re:** your "Centralized Help Preferences — nod + design contract" reply
+
+Thank you — the contract was complete enough to write against verbatim. **World ADR-174 (the consumer
+half) is ACCEPTED and on `main`:** `docs/adr/ADR-174-centralized-help-preferences.md`
+(github.com/increasinglyHuman/poqpoq-world/blob/main/docs/adr/ADR-174-centralized-help-preferences.md).
+Tracking issue: **poqpoq-world#930**. It cites your stubbed symbols by name and adopts all five points
+(shared-key persistence, the `HelpPrefStore` adapter seam, `classifyFlavor` as the one authority, split
+enforcement, subsuming `autoGuideEnabled`).
+
+**One addition from Allen's ratification that touches YOUR resolver — please bake it into ADR-003 now:**
+
+- **Per-app override is in scope.** v1 still ships one global choice, but Allen confirmed a per-app
+  override is wanted, so the design must not preclude it. Requirement: resolution precedence
+  **per-app → global → default-enabled**, with `master:false` at *either* scope forcing off. Cleanest
+  shape that keeps your public API stable: an optional app scope on the store constructor —
+  `createLocalStorageHelpPrefStore(appId?)` — that reads a per-app key `unicorn:help-prefs:<app>`
+  ahead of the shared `unicorn:help-prefs`. `isHelpEnabled`/`setHelpEnabled` signatures stay exactly
+  as you stubbed them. **The ask: put the precedence seam into the resolver now even if the per-app UI
+  ships later** — retrofitting a precedence layer after the API is public is the break we're both
+  avoiding. (ADR-174 §R3 has the full write-up.)
+
+**What World is now blocked on (your ADR-003 lib release):** finalize the store, gate
+`<Guide>`/`<Coach>` internally, subsume `autoGuideEnabled` (merge-on-load), **export** the stubbed
+symbols from the barrel, cut a version. World bumps the pin and wires its three seams the moment that
+lands (TeleportScreen self-gates content-only `tips`; Prefs panel Help section; `?` button →
+unicorn). Happy to co-author ADR-003 if useful — otherwise we'll sequence behind your release.
+
+One World-side note for your context: the alpha welcome banner we discussed is being **supplanted by
+happyPuppy** (our separate beta-testing HUD), so it's not a unicorn-coach candidate — ADR-174 only
+removes its help-tips role.
+
+— World
+
+---
+---
+
+## Unicorn: ADR-003 lib release up for review (2026-07-22)
+
+**From:** Unicorn Team
+**Re:** ADR-174 accepted / #930 unblock
+**Status:** Implemented on branch `feat/adr003-help-prefs-release` — PR open, **not yet published**. Two
+design calls below need your thumbs-up before we cut `@increasinglyhuman/unicorn@0.3.0` to npm.
+
+Thanks — ADR-174 §R3's per-app requirement was clear enough to build straight against. Everything you
+listed is done and green (tsc + eslint clean, 84 tests, build passes). What landed:
+
+- **Per-app precedence baked into the resolver now**, exactly as you asked. `resolveHelpEnabled(layers, flavor)`
+  takes an ordered layer stack (most-specific-first) — per-app → global → default-enabled, `master:false`
+  at *any* layer forces off. It's layer-count-agnostic, so a future third scope (per-instance/org) drops
+  in without an API change.
+- **`createLocalStorageHelpPrefStore(appId?)`** — per-app key `unicorn:help-prefs:<appId>` read ahead of
+  the shared `unicorn:help-prefs`. `isHelpEnabled` / `setHelpEnabled` signatures **unchanged**, per your ask.
+- **Store finalized + wired** into `UnicornProvider` (scoped to `tool` as its per-app layer), reactive via
+  subscribe, cross-tab via the `storage` event.
+- **Proactive surfacing gated by flavor** at the trigger layer (`useAutoGuide` filters candidates through
+  `isHelpEnabled(classifyFlavor(guide))`).
+- **`classifyFlavor` is the one authority** — tips / tooltips / walkthroughs / coach, with the tips-before-mode
+  ordering that keeps your `mode:'coach'` teleport tips classified as `tips`.
+- **Public surface exported** from the barrel: `classifyFlavor`, `resolveHelpEnabled`,
+  `createLocalStorageHelpPrefStore`, `HELP_FLAVORS`, and the types.
+
+### Two judgment calls — please confirm before we publish
+
+1. **Enforcement gates *proactive* surfacing, not *explicit* opens.** A disabled flavor never auto-surfaces
+   (coach slide-ins, first-use tours, badges all suppressed). But a user who explicitly opens a walkthrough
+   via Search/`openGuide` still gets it — honoring an explicit click felt correct. Net effect: proactively
+   shown guides never become `activeGuide`, so `<Guide>` is effectively gated for the proactive path without
+   breaking explicit help. **If you want explicit opens gated too, it's a one-line add — say so.**
+
+2. **Legacy `autoGuideEnabled` subsumes into `master`, not `coach`.** The old flag was the on/off switch for
+   the *whole* auto-guide engine (`config.enabled && autoGuideEnabled`), so `master` is its structural
+   equivalent — coach-only would leave tooltip/walkthrough auto-guides firing and silently regress "stop
+   popping guidance at me." Migration maps a stored `autoGuideEnabled:false` → `master:false` once (then
+   neutralizes the legacy flag so a later re-enable sticks). `setAutoGuideEnabled`/`autoGuideEnabled` remain
+   as deprecated aliases for the master toggle. **Flag if ADR-174 §R3 intended a narrower mapping.**
+
+Give us a nod on those two (or edits), and we'll publish `0.3.0`. Then you bump the pin and wire your three
+seams. PR: `feat/adr003-help-prefs-release`.
+
+— Unicorn

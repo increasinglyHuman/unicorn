@@ -150,7 +150,7 @@ describe('Provider + useAutoGuide integration', () => {
     expect(stored.fatigue?.[autoGuide.id]?.permanentlyDismissed).toBe(true);
   });
 
-  it('honors the global autoGuideEnabled toggle', () => {
+  it('honors the global autoGuideEnabled toggle (now the master help switch)', () => {
     const { result } = renderHook(() => useUnicorn(), {
       wrapper: wrapperFactory([autoGuideContentPackage]),
     });
@@ -163,11 +163,14 @@ describe('Provider + useAutoGuide integration', () => {
     });
 
     expect(result.current.pendingAutoPrompt).toBeNull();
+    expect(result.current.autoGuideEnabled).toBe(false);
 
+    // ADR-003: the toggle now persists to the per-app help-prefs layer as master:false,
+    // not to the per-tool progression record.
     const stored = JSON.parse(
-      localStorage.getItem('unicorn:test-tool') ?? '{}',
+      localStorage.getItem('unicorn:help-prefs:test-tool') ?? '{}',
     );
-    expect(stored.autoGuideEnabled).toBe(false);
+    expect(stored.master).toBe(false);
   });
 
   it('resetProgression clears completed guides, fatigue, and re-enables auto-guides', () => {
@@ -194,7 +197,8 @@ describe('Provider + useAutoGuide integration', () => {
     );
     expect(stored.fatigue).toEqual({});
     expect(stored.completedGuides).toEqual([]);
-    expect(stored.autoGuideEnabled).toBe(true);
+    // Master help switch re-enabled (subsumes the legacy auto-guide re-enable).
+    expect(result.current.autoGuideEnabled).toBe(true);
 
     // And a fresh onToolOpen should now prompt again.
     act(() => {
